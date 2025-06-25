@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-<!-- FontAwesome + AwesomeMarkers (усі іконки тут) -->
+<!-- FontAwesome + AwesomeMarkers -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.css">
 <script  src="https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.js"></script>
@@ -21,9 +21,17 @@ body{margin:0;font-family:Arial,sans-serif;height:100vh}
         background:linear-gradient(to right,#0057B7,#FFD700);color:#fff;font-weight:bold;
         padding:5px 10px}
 .header .title{flex-grow:1;text-align:center;font-size:20px}
+
+/* легенда */
 .legend{background:rgba(255,255,255,.9);padding:6px 8px;border-radius:4px;
         box-shadow:0 0 4px rgba(0,0,0,.2);font-size:14px;line-height:22px}
 .legend i{margin-right:6px}
+
+/* збільшений маркер (домик) */
+.big-marker i{
+  transform:scale(1.4);          /* ~40 % більше */
+  margin-top:-4px;
+}
 </style>
 </head>
 <body>
@@ -37,15 +45,15 @@ body{margin:0;font-family:Arial,sans-serif;height:100vh}
 /* === 1. Карта === */
 const map=L.map('map').setView([50.45,30.5234],8);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
- {attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+ {attribution:'&copy; OpenStreetMap'}).addTo(map);
 
-/* === 2. Функція іконки === */
+/* === 2. Іконки === */
 function icon(color,type){
-  // type: 'plot' → крапелька   | 'house' → домик
   return L.AwesomeMarkers.icon({
-     prefix:'fa',
-     icon: type==='house'?'home':'map-marker',
-     markerColor: color          // blue | green | red | yellow | orange
+    prefix:'fa',
+    icon: type==='house'?'home':'map-marker',
+    markerColor:color,
+    className: type==='house'?'big-marker':''
   });
 }
 
@@ -62,7 +70,7 @@ const plots=[
   {visible:true ,type:'plot' ,color:'orange',coords:[49.769642,31.547382],name:'Келеберда',
    price:'$1500',size:'0.10 га',dist:'115 км',link:'https://sites.google.com/view/keleberda-1500'},
 
-  /* Заготовки: ставиш visible:true і заповнюєш поля */
+  /* заготовки */
   {visible:false,type:'house',color:'blue'  ,coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
   {visible:false,type:'plot' ,color:'green' ,coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
   {visible:false,type:'house',color:'yellow',coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
@@ -70,10 +78,14 @@ const plots=[
   {visible:false,type:'plot' ,color:'orange',coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'}
 ];
 
-/* === 4. Відображення маркерів === */
+/* === 4. Маркери === */
 plots.forEach(p=>{
   if(!p.visible) return;
-  const m=L.marker(p.coords,{icon:icon(p.color,p.type)}).addTo(map);
+  const m=L.marker(p.coords,{
+      icon:icon(p.color,p.type),
+      zIndexOffset: p.type==='plot'?500:0    // капелька поверх домика
+  }).addTo(map);
+
   m.bindPopup(`<b>${p.name}</b><br>
                Ціна: ${p.price}<br>
                Площа: ${p.size}<br>
@@ -82,17 +94,15 @@ plots.forEach(p=>{
 });
 
 /* === 5. Легенда === */
-const legend=L.control({position:'bottomleft'});
-legend.onAdd=()=>{
+L.control({position:'bottomleft'}).onAdd=()=>{
   const d=L.DomUtil.create('div','legend');
-  [['blue','Активна'],['green','Резерв/Аванс'],['red','Продано'],
-   ['yellow','Умовно вільна'],['orange','Нова']]
+  [['blue','Активна'],['green','Резерв/Аванс'],
+   ['red','Продано'],['yellow','Умовно вільна'],['orange','Нова']]
    .forEach(([c,l])=>d.innerHTML+=
      `<i class="fa fa-map-marker" style="color:${c}"></i>${l}<br>`);
-  d.innerHTML+=`<i class="fa fa-home" style="color:green"></i>ділянка з&nbsp;будинком`;
+  d.innerHTML+=`<i class="fa fa-home" style="color:green"></i>ділянка з будинком`;
   return d;
-};
-legend.addTo(map);
+}.addTo(map);
 </script>
 </body>
 </html>
