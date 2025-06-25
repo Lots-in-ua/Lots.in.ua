@@ -15,6 +15,7 @@
 <script  src="https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.js"></script>
 
 <style>
+/* ——— загальне оформлення ——— */
 body{margin:0;font-family:Arial,sans-serif;height:100vh}
 #map{height:calc(100vh - 60px)}
 .header{display:flex;justify-content:space-between;align-items:center;
@@ -24,8 +25,19 @@ body{margin:0;font-family:Arial,sans-serif;height:100vh}
 .legend{background:rgba(255,255,255,.9);padding:6px 8px;border-radius:4px;
         box-shadow:0 0 4px rgba(0,0,0,.2);font-size:14px;line-height:22px}
 .legend i{margin-right:6px}
-/* збільшений маркер (домик) */
+
+/* ——— збільшений маркер (домик) ——— */
 .big-marker i{transform:scale(1.4);margin-top:-4px}
+
+/* ——— патч: абсолютні шляхи до PNG для фону маркерів ——— */
+@media screen {
+  .awesome-marker-icon-blue   {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-icon-2x-blue.png')}
+  .awesome-marker-icon-green  {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-icon-2x-green.png')}
+  .awesome-marker-icon-red    {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-icon-2x-red.png')}
+  .awesome-marker-icon-yellow {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-icon-2x-yellow.png')}
+  .awesome-marker-icon-orange {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-icon-2x-orange.png')}
+  .awesome-marker-shadow      {background-image:url('https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/images/marker-shadow.png')}
+}
 </style>
 </head>
 <body>
@@ -41,7 +53,7 @@ const map=L.map('map').setView([50.45,30.5234],8);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
  {attribution:'&copy; OpenStreetMap'}).addTo(map);
 
-/* 2. Функція іконки */
+/* 2. Іконки */
 function icon(color,type){
   return L.AwesomeMarkers.icon({
     prefix:'fa',
@@ -62,14 +74,7 @@ const plots=[
   {visible:true ,type:'plot' ,color:'yellow',coords:[49.955224,29.669791],name:'Ставище 25',
    price:'$5900',size:'0.25 га',dist:'80 км',link:'https://sites.google.com/view/5-900'},
   {visible:true ,type:'plot' ,color:'orange',coords:[49.769642,31.547382],name:'Келеберда',
-   price:'$1500',size:'0.10 га',dist:'115 км',link:'https://sites.google.com/view/keleberda-1500'},
-
-  /* заготовки */
-  {visible:false,type:'house',color:'blue'  ,coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
-  {visible:false,type:'plot' ,color:'green' ,coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
-  {visible:false,type:'house',color:'yellow',coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
-  {visible:false,type:'plot' ,color:'red'   ,coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'},
-  {visible:false,type:'plot' ,color:'orange',coords:[0,0],name:'—',price:'$',size:'',dist:'',link:'#'}
+   price:'$1500',size:'0.10 га',dist:'115 км',link:'https://sites.google.com/view/keleberda-1500'}
 ];
 
 /* 4. Маркери */
