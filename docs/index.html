@@ -1,60 +1,86 @@
-<!-- ==== початок нового index.html (v2) ==== -->
 <!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Lots UA – Інтерактивна карта</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+<title>Lots UA – інтерактивна карта</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<!-- AwesomeMarkers для іконки-домика -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css" integrity="sha512-p+bN2TV4wcwZimeiiq7G6iUHUoX6fHySf/Tbd4fKsknXjXfEc+8YI+VkIwbPJCAL0eD2R6kUbkEItJ84BbyTAw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js" integrity="sha512-hnOimDLRyuLoRqdfr4WOV212Xm2YtiYD/GXUNfGZt7tliU0i3Tw1Br87XyHN4rUxtdXxopOAYQgW5B2LR3wUyw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;text-align:center;height:100vh}
+body{margin:0;font-family:Arial,sans-serif;height:100vh;text-align:center}
 #map{height:calc(100vh - 60px)}
 .header{display:flex;justify-content:space-between;align-items:center;
-        background:linear-gradient(to right,#0057B7,#FFD700);color:#fff;font-weight:bold;padding:5px 10px}
+        background:linear-gradient(to right,#0057B7,#FFD700);padding:5px 10px;
+        color:#fff;font-weight:bold}
 .header .title{flex-grow:1;text-align:center;font-size:20px}
 .legend{background:rgba(255,255,255,.9);padding:6px 8px;border-radius:4px;
         box-shadow:0 0 4px rgba(0,0,0,.2);font-size:14px;line-height:22px}
 .legend img{vertical-align:middle;margin-right:4px}
 </style></head><body>
-<div class="header"><div>+380 68 715 59 96</div><div class="title">Актуальні пропозиції</div></div>
+<div class="header">
+  <div>+380 68 715 59 96</div>
+  <div class="title">Актуальні пропозиції</div>
+</div>
 <div id="map"></div>
 
 <script>
-/* ---------- базова карта ---------- */
+/* ---------- 1. Карта ---------- */
 const map=L.map('map').setView([50.4501,30.5234],8);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
  {attribution:'&copy; OpenStreetMap'}).addTo(map);
 
-/* ---------- набір іконок ---------- */
+/* ---------- 2. Іконки ---------- */
 const base='https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/';
 const shadow=base+'marker-shadow.png';
-function icon(color,kind){
-  const file=(kind==='house'?'marker-icon-'+color+'-house.png':'marker-icon-'+color+'.png');
-  return new L.Icon({iconUrl:base+file,shadowUrl:shadow,
-        iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]});
+function getIcon(color,type){
+  if(type==='house'){   // «будиночок» через AwesomeMarkers
+    return L.AwesomeMarkers.icon({
+      prefix:'fa',icon:'home',markerColor:color   // blue,green,red,yellow,orange
+    });
+  }
+  // звичайна крапелька
+  return new L.Icon({
+    iconUrl:base+`marker-icon-${color}.png`,shadowUrl:shadow,
+    iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]
+  });
 }
 
-/* ---------- масив ділянок ---------- */
-/*  visible:false  -> маркер приховано, але шаблон готовий до заповнення  */
+/* ---------- 3. Дані ---------- */
 const plots=[
-  {visible:true ,type:'plot' ,color:'blue'  ,coords:[49.818339,30.991579],name:'Очеретяне',
+  /* ► РЕАЛЬНІ ОБ’ЄКТИ (visible:true) ◄ */
+  {visible:true,type:'plot' ,color:'blue'  ,coords:[49.818339,30.991579],name:'Очеретяне',
    price:'$4 900',size:'0.52 га',dist:'60 км',link:'https://sites.google.com/view/zelenky-35'},
-  {visible:true ,type:'house',color:'green' ,coords:[49.858071,30.354294],name:'Мала Антонівка з хатою',
+  {visible:true,type:'house',color:'green' ,coords:[49.858071,30.354294],name:'М. Антонівка (хата)',
    price:'$6 900',size:'0.31 га',dist:'74 км',link:'https://sites.google.com/view/mala-antonivka-hata'},
-  /* ---- ШАБЛОН ДЛЯ ЮЛІ ----
-  {visible:false,type:'plot',color:'yellow',coords:[0,0],
-   name:'Назва',price:'$0',size:'0 га',dist:'0 км',link:'#'},
-  -------------------------------- */
+  {visible:true,type:'plot' ,color:'red'   ,coords:[50.177453,29.923875],name:'Дорогинка',
+   price:'$7 500',size:'0.26 га',dist:'55 км',link:'https://sites.google.com/view/dorogynka7500'},
+  {visible:true,type:'plot' ,color:'yellow',coords:[49.955224,29.669791],name:'Ставище 25',
+   price:'$5 900',size:'0.25 га',dist:'80 км',link:'https://sites.google.com/view/5-900'},
+  {visible:true,type:'plot' ,color:'orange',coords:[49.769642,31.547382],name:'Келеберда',
+   price:'$1 500',size:'0.10 га',dist:'115 км',link:'https://sites.google.com/view/keleberda-1500'},
+
+  /* ► ЗАГОТОВКИ (visible:false) — копіюйте, міняйте і вмикайте ◄ */
+  {visible:false,type:'house',color:'blue'  ,coords:[0,0],name:'Назва',price:'$',size:'',dist:'',link:'#'},
+  {visible:false,type:'plot' ,color:'green' ,coords:[0,0],name:'Назва',price:'$',size:'',dist:'',link:'#'},
+  {visible:false,type:'house',color:'yellow',coords:[0,0],name:'Назва',price:'$',size:'',dist:'',link:'#'},
+  {visible:false,type:'plot' ,color:'red'   ,coords:[0,0],name:'Назва',price:'$',size:'',dist:'',link:'#'},
+  {visible:false,type:'plot' ,color:'orange',coords:[0,0],name:'Назва',price:'$',size:'',dist:'',link:'#'}
 ];
 
-/* ---------- виведення маркерів ---------- */
+/* ---------- 4. Маркери ---------- */
 plots.forEach(p=>{
   if(!p.visible) return;
-  const ic=icon(p.color,p.type);
-  const m=L.marker(p.coords,{icon:ic}).addTo(map);
-  m.bindPopup(`<b>${p.name}</b><br>Ціна: ${p.price}<br>Площа: ${p.size}<br>Відстань: ${p.dist}<br><a href="${p.link}" target="_blank">Докладніше</a>`);
-  if(innerWidth>768){m.on('mouseover',()=>m.openPopup()).on('mouseout',()=>setTimeout(()=>m.closePopup(),800));}
+  const marker=L.marker(p.coords,{icon:getIcon(p.color,p.type)}).addTo(map);
+  marker.bindPopup(`<b>${p.name}</b><br>Ціна: ${p.price}<br>Площа: ${p.size}<br>Відстань до Києва: ${p.dist}<br><a href="${p.link}" target="_blank">Докладніше</a>`);
+  if(innerWidth>768){marker.on('mouseover',()=>marker.openPopup())
+                     .on('mouseout',()=>setTimeout(()=>marker.closePopup(),800));}
 });
 
-/* ---------- легенда ---------- */
+/* ---------- 5. Легенда ---------- */
 const legendItems=[
   {c:'blue'  ,l:'Активна'},
   {c:'green' ,l:'Резерв/Аванс'},
@@ -62,9 +88,10 @@ const legendItems=[
   {c:'yellow',l:'Умовно вільна'},
   {c:'orange',l:'Нова'}
 ];
-const leg=L.control({position:'bottomleft'});
-leg.onAdd=()=>{const d=L.DomUtil.create('div','legend');
-  legendItems.forEach(i=>d.innerHTML+=`<img src="${base}marker-icon-${i.c}.png" width="13"> ${i.l}<br>`);return d};
-leg.addTo(map);
+const legend=L.control({position:'bottomleft'});
+legend.onAdd=()=>{const d=L.DomUtil.create('div','legend');
+  legendItems.forEach(i=>d.innerHTML+=`<img src="${base}marker-icon-${i.c}.png" width="13"> ${i.l}<br>`);
+  d.innerHTML+=`<span style="font-size:16px">🏠 — ділянка з будинком</span>`;
+  return d;};
+legend.addTo(map);
 </script></body></html>
-<!-- ==== кінець нового index.html ==== -->
